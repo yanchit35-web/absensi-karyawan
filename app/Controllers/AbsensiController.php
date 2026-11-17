@@ -201,11 +201,31 @@ class AbsensiController extends BaseController
 
         $setting  = $this->pengaturanModel->getSettings();
         $existing = $this->absensiModel->cekAbsenHariIni($karyawan_id);
+        $karyawan = $this->karyawanModel->find($karyawan_id);
+
+        $shift = $karyawan['shift'] ?? 'pagi';
+        if ($shift === 'siang') {
+            $shiftLabel     = 'Shift Siang';
+            $jamMasukShift  = $setting['shift_siang_masuk'] ?? '14:00:00';
+            $jamKeluarShift = $setting['shift_siang_keluar'] ?? '22:00:00';
+        } elseif ($shift === 'malam') {
+            $shiftLabel     = 'Shift Malam';
+            $jamMasukShift  = $setting['shift_malam_masuk'] ?? '22:00:00';
+            $jamKeluarShift = $setting['shift_malam_keluar'] ?? '06:00:00';
+        } else {
+            $shiftLabel     = 'Shift Pagi';
+            $jamMasukShift  = $setting['shift_pagi_masuk'] ?? ($setting['jam_masuk'] ?? '08:00:00');
+            $jamKeluarShift = $setting['shift_pagi_keluar'] ?? ($setting['jam_keluar'] ?? '17:00:00');
+        }
 
         $data = [
-            'title'    => 'Presensi Mandiri (Self-Absen)',
-            'setting'  => $setting,
-            'existing' => $existing,
+            'title'          => 'Presensi Mandiri (Self-Absen)',
+            'setting'        => $setting,
+            'existing'       => $existing,
+            'karyawan'       => $karyawan,
+            'shiftLabel'     => $shiftLabel,
+            'jamMasukShift'  => $jamMasukShift,
+            'jamKeluarShift' => $jamKeluarShift,
         ];
 
         return view('absensi/self_absen', $data);
@@ -283,18 +303,31 @@ class AbsensiController extends BaseController
             return redirect()->to('/dashboard')->with('info', 'Anda sudah melakukan absensi masuk dan pulang hari ini!');
         }
 
-        // 4. Hitung Status Keterlambatan Otomatis & Akurat
-        $jamMasukSetting = $setting['jam_masuk'] ?? '08:00:00';
+        // 4. Hitung Status Keterlambatan Otomatis & Akurat Sesuai Shift Karyawan
+        $karyawan = $this->karyawanModel->find($karyawan_id);
+        $userShift = $karyawan['shift'] ?? 'pagi';
+
+        if ($userShift === 'siang') {
+            $shiftLabel      = 'Shift Siang';
+            $jamMasukSetting = $setting['shift_siang_masuk'] ?? '14:00:00';
+        } elseif ($userShift === 'malam') {
+            $shiftLabel      = 'Shift Malam';
+            $jamMasukSetting = $setting['shift_malam_masuk'] ?? '22:00:00';
+        } else {
+            $shiftLabel      = 'Shift Pagi';
+            $jamMasukSetting = $setting['shift_pagi_masuk'] ?? ($setting['jam_masuk'] ?? '08:00:00');
+        }
+
         $toleransiMenit  = (int)($setting['toleransi_menit'] ?? 15);
         $batasToleransi  = date('H:i:s', strtotime("+$toleransiMenit minutes", strtotime($jamMasukSetting)));
 
         $status = 'hadir';
-        $keterangan = "Tepat waktu (Jarak: {$distance}m)";
+        $keterangan = "Tepat waktu [{$shiftLabel}: " . substr($jamMasukSetting, 0, 5) . "] (Jarak: {$distance}m)";
         if ($currentTime > $batasToleransi) {
             $status = 'terlambat';
             $selisihDetik = strtotime($currentTime) - strtotime($jamMasukSetting);
             $menitTelat = ceil($selisihDetik / 60);
-            $keterangan = "Terlambat {$menitTelat} menit (Jadwal: " . substr($jamMasukSetting, 0, 5) . ", Jarak: {$distance}m)";
+            $keterangan = "Terlambat {$menitTelat} menit [{$shiftLabel}: " . substr($jamMasukSetting, 0, 5) . ", Jarak: {$distance}m]";
         }
 
         $this->absensiModel->insert([

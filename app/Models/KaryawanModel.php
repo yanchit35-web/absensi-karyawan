@@ -13,7 +13,7 @@ class KaryawanModel extends Model
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
     protected $allowedFields    = [
-        'nik', 'nama', 'jabatan', 'departemen', 'email', 'telepon', 'tgl_masuk', 'status',
+        'nik', 'nama', 'jabatan', 'departemen', 'shift', 'email', 'telepon', 'tgl_masuk', 'status',
     ];
 
     // Dates

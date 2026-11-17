@@ -12,7 +12,7 @@
     <!-- Filter -->
     <div class="card-body border-bottom">
         <form method="GET" action="/karyawan" class="row g-2 align-items-end">
-            <div class="col-md-5">
+            <div class="col-md-4">
                 <label class="form-label mb-1 small fw-semibold">Cari</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
@@ -20,7 +20,7 @@
                         value="<?= esc($search ?? '') ?>">
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label mb-1 small fw-semibold">Departemen</label>
                 <select class="form-select" name="departemen">
                     <option value="">Semua Departemen</option>
@@ -30,6 +30,15 @@
                             <?= esc($dep['departemen']) ?>
                         </option>
                     <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label mb-1 small fw-semibold">Shift Kerja</label>
+                <select class="form-select" name="shift">
+                    <option value="">Semua Shift</option>
+                    <option value="pagi" <?= ($shift ?? '') === 'pagi' ? 'selected' : '' ?>>☀️ Pagi</option>
+                    <option value="siang" <?= ($shift ?? '') === 'siang' ? 'selected' : '' ?>>⛅ Siang</option>
+                    <option value="malam" <?= ($shift ?? '') === 'malam' ? 'selected' : '' ?>>🌙 Malam</option>
                 </select>
             </div>
             <div class="col-md-3">
@@ -48,6 +57,7 @@
                         <th>NIK</th>
                         <th>Nama Karyawan</th>
                         <th>Username Login</th>
+                        <th>Shift Kerja</th>
                         <th>Jabatan</th>
                         <th>Departemen</th>
                         <th>Telepon</th>
@@ -59,7 +69,7 @@
                 <tbody>
                     <?php if (empty($karyawan)): ?>
                     <tr>
-                        <td colspan="10" class="text-center py-5 text-muted">
+                        <td colspan="11" class="text-center py-5 text-muted">
                             <i class="bi bi-inbox fs-1 d-block mb-2 opacity-25"></i>
                             Tidak ada data karyawan
                         </td>
@@ -87,6 +97,15 @@
                                 </span>
                             <?php else: ?>
                                 <span class="badge bg-secondary-subtle text-secondary border">Belum ada akun</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if (($k['shift'] ?? 'pagi') === 'siang'): ?>
+                                <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1">⛅ Siang</span>
+                            <?php elseif (($k['shift'] ?? 'pagi') === 'malam'): ?>
+                                <span class="badge bg-dark text-white px-2 py-1">🌙 Malam</span>
+                            <?php else: ?>
+                                <span class="badge bg-warning-subtle text-dark border border-warning-subtle px-2 py-1">☀️ Pagi</span>
                             <?php endif; ?>
                         </td>
                         <td><?= esc($k['jabatan']) ?></td>

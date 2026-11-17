@@ -73,6 +73,15 @@
                                 value="<?= old('tgl_masuk', $karyawan['tgl_masuk']) ?>">
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label fw-semibold">Shift Kerja <span class="text-danger">*</span></label>
+                            <select class="form-select fw-semibold" name="shift" required>
+                                <option value="pagi" <?= old('shift', $karyawan['shift'] ?? 'pagi') === 'pagi' ? 'selected' : '' ?>>☀️ Shift Pagi</option>
+                                <option value="siang" <?= old('shift', $karyawan['shift'] ?? 'pagi') === 'siang' ? 'selected' : '' ?>>⛅ Shift Siang</option>
+                                <option value="malam" <?= old('shift', $karyawan['shift'] ?? 'pagi') === 'malam' ? 'selected' : '' ?>>🌙 Shift Malam</option>
+                            </select>
+                            <small class="text-muted">Jam kerja otomatis mengikuti shift yang dipilih.</small>
+                        </div>
+                        <div class="col-md-6">
                             <label class="form-label fw-semibold">Status</label>
                             <select class="form-select" name="status">
                                 <option value="aktif" <?= old('status', $karyawan['status']) === 'aktif' ? 'selected' : '' ?>>Aktif</option>

@@ -22,6 +22,7 @@ class KaryawanController extends BaseController
 
         $search     = $this->request->getGet('search');
         $departemen = $this->request->getGet('departemen');
+        $shift      = $this->request->getGet('shift');
 
         $db = \Config\Database::connect();
         $builder = $db->table('karyawan')
@@ -41,6 +42,10 @@ class KaryawanController extends BaseController
             $builder = $builder->where('karyawan.departemen', $departemen);
         }
 
+        if ($shift) {
+            $builder = $builder->where('karyawan.shift', $shift);
+        }
+
         $karyawan    = $builder->orderBy('karyawan.nama', 'ASC')->get()->getResultArray();
         $departemens = $this->karyawanModel->getDepartemen();
 
@@ -50,6 +55,7 @@ class KaryawanController extends BaseController
             'departemens'=> $departemens,
             'search'     => $search,
             'departemen' => $departemen,
+            'shift'      => $shift,
         ];
 
         return view('karyawan/index', $data);
@@ -121,6 +127,7 @@ class KaryawanController extends BaseController
             'nama'       => $nama,
             'jabatan'    => $this->request->getPost('jabatan'),
             'departemen' => $this->request->getPost('departemen'),
+            'shift'      => $this->request->getPost('shift') ?: 'pagi',
             'email'      => $this->request->getPost('email'),
             'telepon'    => $this->request->getPost('telepon'),
             'tgl_masuk'  => $this->request->getPost('tgl_masuk') ?: null,
@@ -230,6 +237,7 @@ class KaryawanController extends BaseController
             'nama'       => $namaKaryawan,
             'jabatan'    => $this->request->getPost('jabatan'),
             'departemen' => $this->request->getPost('departemen'),
+            'shift'      => $this->request->getPost('shift') ?: 'pagi',
             'email'      => $this->request->getPost('email'),
             'telepon'    => $this->request->getPost('telepon'),
             'tgl_masuk'  => $this->request->getPost('tgl_masuk') ?: null,

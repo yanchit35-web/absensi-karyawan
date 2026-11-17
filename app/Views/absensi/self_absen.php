@@ -41,7 +41,8 @@
                     <?= date('l, d F Y') ?>
                 </h4>
                 <small class="text-white-50">
-                    Jadwal Masuk: <strong><?= substr($setting['jam_masuk'] ?? '08:00', 0, 5) ?> WIB</strong> &bull; 
+                    Jadwal: <span class="badge bg-warning text-dark px-2"><?= esc($shiftLabel ?? 'Shift Pagi') ?></span> 
+                    <strong><?= substr($jamMasukShift ?? ($setting['jam_masuk'] ?? '08:00'), 0, 5) ?> - <?= substr($jamKeluarShift ?? ($setting['jam_keluar'] ?? '17:00'), 0, 5) ?> WIB</strong> &bull; 
                     Toleransi: <strong><?= $setting['toleransi_menit'] ?? 15 ?> menit</strong> &bull; 
                     Radius Kantor: <strong><?= $setting['kantor_radius'] ?? 500 ?> meter</strong>
                 </small>
@@ -185,7 +186,7 @@
     const officeLat = <?= (float)($setting['kantor_lat'] ?? -6.200000) ?>;
     const officeLng = <?= (float)($setting['kantor_lng'] ?? 106.816666) ?>;
     const maxRadius = <?= (int)($setting['kantor_radius'] ?? 500) ?>;
-    const jamMasukStr = "<?= esc($setting['jam_masuk'] ?? '08:00:00') ?>";
+    const jamMasukStr = "<?= esc($jamMasukShift ?? ($setting['jam_masuk'] ?? '08:00:00')) ?>";
     const toleransiMenit = <?= (int)($setting['toleransi_menit'] ?? 15) ?>;
 
     let userLat = null;

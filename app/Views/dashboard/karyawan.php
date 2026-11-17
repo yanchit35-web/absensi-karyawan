@@ -33,6 +33,35 @@
     }
 </style>
 
+<?php
+$userShift = $profile['shift'] ?? 'pagi';
+if ($userShift === 'siang') {
+    $shiftName   = 'Shift Siang';
+    $shiftIcon   = 'bi-cloud-sun-fill';
+    $shiftColor  = '#0dcaf0';
+    $shiftBg     = 'rgba(13, 202, 240, 0.22)';
+    $shiftBorder = 'rgba(13, 202, 240, 0.6)';
+    $jamMasukEmp = substr($setting['shift_siang_masuk'] ?? '14:00', 0, 5);
+    $jamKeluarEmp= substr($setting['shift_siang_keluar'] ?? '22:00', 0, 5);
+} elseif ($userShift === 'malam') {
+    $shiftName   = 'Shift Malam';
+    $shiftIcon   = 'bi-moon-stars-fill';
+    $shiftColor  = '#d2a8ff';
+    $shiftBg     = 'rgba(130, 80, 223, 0.3)';
+    $shiftBorder = 'rgba(175, 128, 255, 0.6)';
+    $jamMasukEmp = substr($setting['shift_malam_masuk'] ?? '22:00', 0, 5);
+    $jamKeluarEmp= substr($setting['shift_malam_keluar'] ?? '06:00', 0, 5);
+} else {
+    $shiftName   = 'Shift Pagi';
+    $shiftIcon   = 'bi-brightness-high-fill';
+    $shiftColor  = '#ffda6a';
+    $shiftBg     = 'rgba(255, 193, 7, 0.22)';
+    $shiftBorder = 'rgba(255, 193, 7, 0.6)';
+    $jamMasukEmp = substr($setting['shift_pagi_masuk'] ?? ($setting['jam_masuk'] ?? '08:00'), 0, 5);
+    $jamKeluarEmp= substr($setting['shift_pagi_keluar'] ?? ($setting['jam_keluar'] ?? '17:00'), 0, 5);
+}
+?>
+
 <div class="row mb-4">
     <div class="col-12">
         <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #0f3460 0%, #16213e 55%, #1a1a2e 100%);">
@@ -79,6 +108,15 @@
                                 <span class="text-white fw-bold" style="font-size: 0.92rem;"><?= esc($profile['departemen'] ?? '-') ?></span>
                             </div>
 
+                            <!-- Shift Kerja -->
+                            <div class="employee-meta-pill">
+                                <div class="icon-bubble" style="background: <?= $shiftBg ?>; border: 1px solid <?= $shiftBorder ?>; color: <?= $shiftColor ?>;">
+                                    <i class="bi <?= $shiftIcon ?>"></i>
+                                </div>
+                                <span style="color: rgba(255, 255, 255, 0.65); font-size: 0.8rem; font-weight: 500;">Shift:</span>
+                                <span class="text-white fw-bold" style="font-size: 0.92rem;"><?= $shiftName ?> (<?= $jamMasukEmp ?> - <?= $jamKeluarEmp ?>)</span>
+                            </div>
+
                             <!-- Ganti Password / Profil Akun -->
                             <a href="/profil" class="employee-meta-pill text-decoration-none" title="Kelola Akun & Ganti Password">
                                 <div class="icon-bubble" style="background: rgba(130, 80, 223, 0.3); border: 1px solid rgba(175, 128, 255, 0.6); color: #d2a8ff;">
@@ -114,7 +152,7 @@
                 <div class="d-flex flex-wrap align-items-center justify-content-between">
                     <div>
                         <h5 class="fw-bold mb-1">Status Kehadiran Hari Ini</h5>
-                        <p class="text-muted small mb-0">Jam Kerja: <?= substr($setting['jam_masuk'] ?? '08:00', 0, 5) ?> - <?= substr($setting['jam_keluar'] ?? '17:00', 0, 5) ?> WIB (Toleransi: <?= $setting['toleransi_menit'] ?? 15 ?> menit)</p>
+                        <p class="text-muted small mb-0">Jadwal Kerja Anda: <strong class="text-primary"><?= $shiftName ?> (<?= $jamMasukEmp ?> - <?= $jamKeluarEmp ?> WIB)</strong> • Toleransi Keterlambatan: <?= $setting['toleransi_menit'] ?? 15 ?> menit</p>
                     </div>
                     <div class="mt-3 mt-md-0 d-flex gap-2">
                         <?php if (!$absenHariIni): ?>

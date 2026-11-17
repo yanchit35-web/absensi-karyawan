@@ -73,6 +73,15 @@
                             <input type="date" class="form-control" name="tgl_masuk" value="<?= old('tgl_masuk') ?>">
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label fw-semibold">Shift Kerja <span class="text-danger">*</span></label>
+                            <select class="form-select fw-semibold" name="shift" required>
+                                <option value="pagi" <?= old('shift') === 'pagi' || !old('shift') ? 'selected' : '' ?>>☀️ Shift Pagi</option>
+                                <option value="siang" <?= old('shift') === 'siang' ? 'selected' : '' ?>>⛅ Shift Siang</option>
+                                <option value="malam" <?= old('shift') === 'malam' ? 'selected' : '' ?>>🌙 Shift Malam</option>
+                            </select>
+                            <small class="text-muted">Jam masuk & pulang otomatis mengikuti shift.</small>
+                        </div>
+                        <div class="col-md-6">
                             <label class="form-label fw-semibold">Status</label>
                             <select class="form-select" name="status">
                                 <option value="aktif" <?= old('status') !== 'nonaktif' ? 'selected' : '' ?>>Aktif</option>
