@@ -1,69 +1,147 @@
-# CodeIgniter 4 Application Starter
+# 🏢 Sistem Absensi Karyawan Berbasis CodeIgniter 4
 
-## What is CodeIgniter?
+Aplikasi manajemen kehadiran dan absensi karyawan modern berbasis web yang dibangun dengan framework **CodeIgniter 4**, **MySQL**, **Bootstrap 5**, dan **Leaflet.js**. Dilengkapi dengan fitur absensi mandiri menggunakan **Foto Selfie Kamera**, **GPS Geolocation & Geofencing Radius Kantor Akurat**, serta pemisahan hak akses ketat antara **Admin** dan **Karyawan**.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+---
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+## 🌟 Fitur Unggulan
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+### 1. 🛡️ Role & Hak Akses Ketat (Strict Scoping)
+- **Admin**:
+  - Mengelola data master karyawan (CRUD, pencarian, status aktif/non-aktif).
+  - Mengelola seluruh data absensi karyawan.
+  - Menyetujui atau menolak permohonan **Cuti / Izin / Sakit** dan **Lembur**.
+  - Mengatur konfigurasi kantor: jam kerja, toleransi keterlambatan, koordinat GPS kantor, dan radius kehadiran.
+  - Melihat serta mengekspor laporan seluruh karyawan ke format **PDF** dan **Excel**.
+- **Karyawan**:
+  - Dashboard pribadi dengan tema modern *glassmorphism* (NIK, Jabatan, Departemen).
+  - Melakukan absensi mandiri masuk & pulang.
+  - Hanya dapat melihat data, riwayat kehadiran, pengajuan izin, dan laporan **miliknya sendiri**.
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+### 2. 📸 Self-Absen dengan Kamera Selfie & GPS Geofencing
+- **Kamera Selfie**: Mengambil foto secara langsung dari kamera laptop/HP saat absensi masuk dan pulang.
+- **Waktu Akurat (WIB)**: Sinkronisasi jam digital *real-time* berbasis zona waktu `Asia/Jakarta`.
+- **Validasi Radius Kantor (Geofencing)**:
+  - Menggunakan algoritma **Haversine Formula** di sisi server (backend) untuk menghitung jarak akurat antara koordinat GPS karyawan dengan kantor.
+  - Menolak absensi secara otomatis apabila karyawan berada di luar radius yang telah diatur oleh admin.
+  - Dilengkapi peta interaktif **Leaflet.js** & OpenStreetMap yang menampilkan titik koordinat Anda dan lingkaran batas radius kantor.
 
-## Installation & updates
+### 3. ⚙️ Pengaturan Kantor Interaktif
+- Titik koordinat GPS kantor dapat ditentukan dengan mudah:
+  - Memasukkan angka Latitude & Longitude manual.
+  - Menggeser (*drag-and-drop*) marker pada peta Leaflet.js.
+  - Mengklik tombol **"Gunakan Lokasi Saat Ini"** (auto-detect GPS).
+- Pengaturan radius toleransi (meter), jam masuk, jam pulang, dan toleransi keterlambatan (menit).
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+### 4. 📝 Pengajuan Cuti, Izin, Sakit & Lembur
+- Karyawan dapat mengajukan izin/cuti/sakit dengan keterangan dan unggahan dokumen bukti.
+- Saat permohonan disetujui admin, sistem otomatis membuat riwayat absensi terkait.
+- Pengajuan lembur dengan pencatatan waktu mulai, selesai, dan alasan pekerjaan.
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+### 5. 📊 Laporan & Ekspor Data
+- Rekapitulasi absensi bulanan/rentang tanggal tertentu.
+- Ekspor laporan siap cetak ke format **PDF** (*Dompdf*).
+- Ekspor rekapitulasi ke format **Excel (.xlsx)** (*PhpSpreadsheet*).
 
-## Setup
+---
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+## 🛠️ Tech Stack & Requirements
 
-## Important Change with index.php
+- **PHP**: `^8.2` atau `^8.3` (Disarankan PHP 8.3 via Laragon / XAMPP)
+- **Framework**: CodeIgniter 4.7.5
+- **Database**: MySQL 8.x / MariaDB
+- **Frontend**: Bootstrap 5.3, Bootstrap Icons, Leaflet.js (OpenStreetMap)
+- **Libraries**:
+  - `dompdf/dompdf`: Ekspor dokumen PDF
+  - `phpoffice/phpspreadsheet`: Ekspor spreadsheet Excel
+- **Zona Waktu**: `Asia/Jakarta` (WIB)
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+---
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+## 🚀 Panduan Instalasi & Menjalankan
 
-**Please** read the user guide for a better explanation of how CI4 works!
+### 1. Clone Repositori
+```bash
+git clone git@github.com:yanchit35-web/absensi-karyawan.git
+cd absensi-karyawan
+```
 
-## Repository Management
+### 2. Install Dependensi (Composer)
+```bash
+composer install
+```
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+### 3. Konfigurasi Environment (`.env`)
+Salin file `.env.example` menjadi `.env`:
+```bash
+cp .env.example .env
+```
+Sesuaikan konfigurasi database jika diperlukan:
+```env
+database.default.hostname = localhost
+database.default.database = absensi_karyawan
+database.default.username = root
+database.default.password = 
+database.default.DBDriver = MySQLi
+database.default.port = 3306
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+app.appTimezone = 'Asia/Jakarta'
+```
 
-## Server Requirements
+### 4. Buat Database & Jalankan Migrasi + Seeder
+Buat database baru bernama `absensi_karyawan` di MySQL Anda, kemudian jalankan:
+```bash
+# Jalankan seluruh migrasi tabel
+php spark migrate
 
-PHP version 8.2 or higher is required, with the following extensions installed:
+# Jalankan seeder akun & data awal
+php spark db:seed UserSeeder
+php spark db:seed DummySeeder
+```
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+### 5. Jalankan Web Server
+```bash
+php spark serve --port 8080
+```
+Buka browser dan akses: **[http://localhost:8080](http://localhost:8080)**
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - The end of life date for PHP 8.1 was December 31, 2025.
-> - If you are still using below PHP 8.2, you should upgrade immediately.
-> - The end of life date for PHP 8.2 will be December 31, 2026.
+---
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+## 🔑 Akun Demo Default
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+| Role | Username | Password | Keterangan |
+| :--- | :--- | :--- | :--- |
+| **Admin** | `admin` | `admin123` | Akses penuh ke seluruh menu & pengaturan |
+| **Karyawan 1** | `emp001` | `password123` | Ahmad Fauzi - Software Engineer (IT) |
+| **Karyawan 2** | `emp002` | `password123` | Siti Nurhaliza - HR Specialist (HRD) |
+| **Karyawan 3** | `emp003` | `password123` | Budi Santoso - Finance Officer (Keuangan) |
+| **Karyawan 4** | `emp004` | `password123` | Dewi Lestari - Marketing Lead (Pemasaran) |
+| **Karyawan 5** | `emp005` | `password123` | Eko Prasetyo - Operations Staff (Operasional) |
+
+---
+
+## 📁 Struktur Direktori Penting
+
+```text
+absensi-karyawan/
+├── app/
+│   ├── Config/          # Konfigurasi aplikasi, rute, database, filter
+│   ├── Controllers/     # Auth, Dashboard, Absensi, Karyawan, Laporan, Pengajuan, Lembur, Pengaturan
+│   ├── Database/
+│   │   ├── Migrations/  # Skema tabel database (Users, Karyawan, Absensi, Pengaturan, Pengajuan, Lembur)
+│   │   └── Seeds/       # UserSeeder & DummySeeder data sampel
+│   ├── Filters/         # AuthFilter untuk proteksi route login & session
+│   ├── Models/          # Model data CodeIgniter
+│   └── Views/           # Template UI (Blade-like views dengan Bootstrap 5 & Leaflet.js)
+├── public/
+│   ├── uploads/absensi/ # Penyimpanan foto selfie absensi
+│   └── index.php        # Entry point web
+├── .env.example         # Template konfigurasi environment
+└── README.md            # Dokumentasi proyek
+```
+
+---
+
+## 📄 Lisensi
+Proyek ini dibuat untuk keperluan sistem manajemen internal dan absensi karyawan.
+Bebas dikembangkan dan dimodifikasi sesuai kebutuhan organisasi/perusahaan Anda.
