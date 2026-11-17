@@ -87,4 +87,12 @@ class Paths
      * value - the directory should not be publicly accessible.
      */
     public string $envDirectory = __DIR__ . '/../../';
+
+    public function __construct()
+    {
+        // Support Vercel / AWS Lambda serverless read-only filesystem
+        if (getenv('VERCEL') || isset($_SERVER['VERCEL'])) {
+            $this->writableDirectory = '/tmp';
+        }
+    }
 }
