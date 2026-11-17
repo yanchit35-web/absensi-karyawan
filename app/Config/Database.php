@@ -194,6 +194,14 @@ class Database extends Config
     {
         parent::__construct();
 
+        // Otomatis aktifkan SSL jika menggunakan TiDB Cloud / Vercel
+        $host = $this->default['hostname'] ?? '';
+        if (getenv('VERCEL') || (is_string($host) && str_contains($host, 'tidbcloud.com'))) {
+            $this->default['encrypt'] = [
+                'ssl_verify' => false,
+            ];
+        }
+
         // Ensure that we always set the database group to 'tests' if
         // we are currently running an automated test suite, so that
         // we don't overwrite live data on accident.
