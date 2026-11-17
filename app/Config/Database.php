@@ -194,6 +194,28 @@ class Database extends Config
     {
         parent::__construct();
 
+        // Support Vercel / serverless environment variables with underscores or direct getenv
+        $envHost = getenv('database_default_hostname') ?: (getenv('database.default.hostname') ?: ($_SERVER['database_default_hostname'] ?? null));
+        if ($envHost) {
+            $this->default['hostname'] = $envHost;
+        }
+        $envUser = getenv('database_default_username') ?: (getenv('database.default.username') ?: ($_SERVER['database_default_username'] ?? null));
+        if ($envUser) {
+            $this->default['username'] = $envUser;
+        }
+        $envPass = getenv('database_default_password') ?: (getenv('database.default.password') ?: ($_SERVER['database_default_password'] ?? null));
+        if ($envPass) {
+            $this->default['password'] = $envPass;
+        }
+        $envDb = getenv('database_default_database') ?: (getenv('database.default.database') ?: ($_SERVER['database_default_database'] ?? null));
+        if ($envDb) {
+            $this->default['database'] = $envDb;
+        }
+        $envPort = getenv('database_default_port') ?: (getenv('database.default.port') ?: ($_SERVER['database_default_port'] ?? null));
+        if ($envPort) {
+            $this->default['port'] = (int)$envPort;
+        }
+
         // Otomatis aktifkan SSL jika menggunakan TiDB Cloud / Vercel
         $host = $this->default['hostname'] ?? '';
         if (getenv('VERCEL') || (is_string($host) && str_contains($host, 'tidbcloud.com'))) {

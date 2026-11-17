@@ -24,6 +24,7 @@
     }
   ],
   "env": {
-    "CI_ENVIRONMENT": "production"
+    "CI_ENVIRONMENT": "production",
+    "VERCEL": "1"
   }
 }

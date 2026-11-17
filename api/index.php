@@ -3,13 +3,16 @@
  * Entry point for Vercel Serverless Function
  */
 
+// Pastikan flag VERCEL aktif
+putenv('VERCEL=1');
+$_ENV['VERCEL'] = '1';
+$_SERVER['VERCEL'] = '1';
+
 // Pastikan direktori writable di serverless (/tmp)
-if (getenv('VERCEL') || isset($_SERVER['VERCEL'])) {
-    foreach (['cache', 'session', 'logs', 'uploads', 'uploads/absensi'] as $dir) {
-        $path = '/tmp/' . $dir;
-        if (!is_dir($path)) {
-            @mkdir($path, 0777, true);
-        }
+foreach (['cache', 'session', 'logs', 'uploads', 'uploads/absensi'] as $dir) {
+    $path = '/tmp/' . $dir;
+    if (!is_dir($path)) {
+        @mkdir($path, 0777, true);
     }
 }
 
