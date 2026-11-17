@@ -38,63 +38,55 @@
         <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #0f3460 0%, #16213e 55%, #1a1a2e 100%);">
             <div class="card-body p-4">
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <!-- Avatar Icon -->
-                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow" 
-                             style="width: 60px; height: 60px; background: linear-gradient(135deg, #0f3460, #533483); font-size: 1.6rem; border: 2px solid rgba(255,255,255,0.35); box-shadow: 0 0 15px rgba(83, 52, 131, 0.4);">
-                            <?= strtoupper(substr(esc($profile['nama'] ?? session()->get('nama') ?? 'U'), 0, 1)) ?>
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge px-3 py-1 fw-bold" 
+                                  style="background: rgba(13, 202, 240, 0.15); color: #00f2fe; border: 1px solid rgba(13, 202, 240, 0.35); font-size: 0.75rem; letter-spacing: 0.8px;">
+                                <i class="bi bi-shield-check me-1"></i>PORTAL KARYAWAN
+                            </span>
                         </div>
 
-                        <div>
-                            <div class="d-flex align-items-center gap-2 mb-1">
-                                <span class="badge px-3 py-1 fw-bold" 
-                                      style="background: rgba(13, 202, 240, 0.15); color: #00f2fe; border: 1px solid rgba(13, 202, 240, 0.35); font-size: 0.72rem; letter-spacing: 0.8px;">
-                                    <i class="bi bi-shield-check me-1"></i>PORTAL KARYAWAN
-                                </span>
+                        <h3 class="fw-bolder mb-2 text-white" style="letter-spacing: -0.5px;">
+                            Halo, <?= esc($profile['nama'] ?? session()->get('nama')) ?>! 👋
+                        </h3>
+
+                        <!-- Badges Informasi Karyawan -->
+                        <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+                            <!-- NIK: Kartu Biru Muda (Info) -->
+                            <div class="employee-meta-pill">
+                                <div class="icon-bubble" style="background: rgba(13, 202, 240, 0.22); border: 1px solid rgba(13, 202, 240, 0.6); color: #00f2fe;">
+                                    <i class="bi bi-person-vcard-fill"></i>
+                                </div>
+                                <span style="color: rgba(255, 255, 255, 0.65); font-size: 0.8rem; font-weight: 500;">NIK:</span>
+                                <span class="text-white fw-bold font-monospace" style="font-size: 0.92rem; letter-spacing: 0.5px;"><?= esc($profile['nik'] ?? '-') ?></span>
                             </div>
 
-                            <h3 class="fw-bolder mb-2 text-white" style="letter-spacing: -0.5px;">
-                                Halo, <?= esc($profile['nama'] ?? session()->get('nama')) ?>! 👋
-                            </h3>
-
-                            <!-- Badges Informasi Karyawan (Estetik, Selaras Tema & Sangat Jelas) -->
-                            <div class="d-flex flex-wrap align-items-center gap-2 mt-1">
-                                <!-- NIK: Kartu Biru Muda (Info) -->
-                                <div class="employee-meta-pill">
-                                    <div class="icon-bubble" style="background: rgba(13, 202, 240, 0.22); border: 1px solid rgba(13, 202, 240, 0.6); color: #00f2fe;">
-                                        <i class="bi bi-person-vcard-fill"></i>
-                                    </div>
-                                    <span style="color: rgba(255, 255, 255, 0.65); font-size: 0.8rem; font-weight: 500;">NIK:</span>
-                                    <span class="text-white fw-bold font-monospace" style="font-size: 0.92rem; letter-spacing: 0.5px;"><?= esc($profile['nik'] ?? '-') ?></span>
+                            <!-- Jabatan: Koper Kuning (Warning) -->
+                            <div class="employee-meta-pill">
+                                <div class="icon-bubble" style="background: rgba(255, 193, 7, 0.22); border: 1px solid rgba(255, 193, 7, 0.6); color: #ffda6a;">
+                                    <i class="bi bi-briefcase-fill"></i>
                                 </div>
-
-                                <!-- Jabatan: Koper Kuning (Warning) -->
-                                <div class="employee-meta-pill">
-                                    <div class="icon-bubble" style="background: rgba(255, 193, 7, 0.22); border: 1px solid rgba(255, 193, 7, 0.6); color: #ffda6a;">
-                                        <i class="bi bi-briefcase-fill"></i>
-                                    </div>
-                                    <span style="color: rgba(255, 255, 255, 0.65); font-size: 0.8rem; font-weight: 500;">Jabatan:</span>
-                                    <span class="text-white fw-bold" style="font-size: 0.92rem;"><?= esc($profile['jabatan'] ?? '-') ?></span>
-                                </div>
-
-                                <!-- Departemen: Gedung Hijau (Success) -->
-                                <div class="employee-meta-pill">
-                                    <div class="icon-bubble" style="background: rgba(25, 135, 84, 0.28); border: 1px solid rgba(32, 201, 151, 0.6); color: #20c997;">
-                                        <i class="bi bi-building-fill"></i>
-                                    </div>
-                                    <span style="color: rgba(255, 255, 255, 0.65); font-size: 0.8rem; font-weight: 500;">Departemen:</span>
-                                    <span class="text-white fw-bold" style="font-size: 0.92rem;"><?= esc($profile['departemen'] ?? '-') ?></span>
-                                </div>
-
-                                <!-- Ganti Password / Profil Akun -->
-                                <a href="/profil" class="employee-meta-pill text-decoration-none" title="Kelola Akun & Ganti Password">
-                                    <div class="icon-bubble" style="background: rgba(130, 80, 223, 0.3); border: 1px solid rgba(175, 128, 255, 0.6); color: #d2a8ff;">
-                                        <i class="bi bi-shield-lock-fill"></i>
-                                    </div>
-                                    <span style="color: rgba(255, 255, 255, 0.75); font-size: 0.8rem; font-weight: 500;">Akun:</span>
-                                    <span class="text-white fw-bold" style="font-size: 0.88rem;">Ganti Password <i class="bi bi-arrow-right-short"></i></span>
-                                </a>
+                                <span style="color: rgba(255, 255, 255, 0.65); font-size: 0.8rem; font-weight: 500;">Jabatan:</span>
+                                <span class="text-white fw-bold" style="font-size: 0.92rem;"><?= esc($profile['jabatan'] ?? '-') ?></span>
                             </div>
+
+                            <!-- Departemen: Gedung Hijau (Success) -->
+                            <div class="employee-meta-pill">
+                                <div class="icon-bubble" style="background: rgba(25, 135, 84, 0.28); border: 1px solid rgba(32, 201, 151, 0.6); color: #20c997;">
+                                    <i class="bi bi-building-fill"></i>
+                                </div>
+                                <span style="color: rgba(255, 255, 255, 0.65); font-size: 0.8rem; font-weight: 500;">Departemen:</span>
+                                <span class="text-white fw-bold" style="font-size: 0.92rem;"><?= esc($profile['departemen'] ?? '-') ?></span>
+                            </div>
+
+                            <!-- Ganti Password / Profil Akun -->
+                            <a href="/profil" class="employee-meta-pill text-decoration-none" title="Kelola Akun & Ganti Password">
+                                <div class="icon-bubble" style="background: rgba(130, 80, 223, 0.3); border: 1px solid rgba(175, 128, 255, 0.6); color: #d2a8ff;">
+                                    <i class="bi bi-shield-lock-fill"></i>
+                                </div>
+                                <span style="color: rgba(255, 255, 255, 0.75); font-size: 0.8rem; font-weight: 500;">Akun:</span>
+                                <span class="text-white fw-bold" style="font-size: 0.88rem;">Ganti Password <i class="bi bi-arrow-right-short"></i></span>
+                            </a>
                         </div>
                     </div>
 
