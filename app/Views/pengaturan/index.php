@@ -60,7 +60,7 @@
                     <div class="mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="fw-bold text-secondary mb-0"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Titik Lokasi Kantor & Radius Geofencing (Akurat)</h6>
-                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="detectCurrentLocation()">
+                            <button type="button" id="btnDetectLokasi" class="btn btn-sm btn-outline-primary" onclick="detectCurrentLocation()">
                                 <i class="bi bi-crosshair me-1"></i> Deteksi Lokasi Saya Saat Ini
                             </button>
                         </div>
@@ -166,8 +166,8 @@
             return;
         }
 
-        const btn = event.target;
-        const originalText = btn.innerHTML;
+        const btn = document.getElementById('btnDetectLokasi');
+        const originalText = '<i class="bi bi-crosshair me-1"></i> Deteksi Lokasi Saya Saat Ini';
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Mendeteksi...';
         btn.disabled = true;
 
