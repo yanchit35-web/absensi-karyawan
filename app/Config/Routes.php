@@ -13,6 +13,10 @@ $routes->get('/logout', 'AuthController::logout');
 // Dashboard
 $routes->get('/dashboard', 'DashboardController::index', ['filter' => 'auth']);
 
+// Profil & Ganti Password (Karyawan & Admin)
+$routes->get('/profil', 'ProfileController::index', ['filter' => 'auth']);
+$routes->post('/profil/update-password', 'ProfileController::updatePassword', ['filter' => 'auth']);
+
 // Self Absensi (Foto Selfie & GPS)
 $routes->get('/self-absen', 'AbsensiController::selfAbsen', ['filter' => 'auth']);
 $routes->post('/self-absen', 'AbsensiController::submitSelfAbsen', ['filter' => 'auth']);

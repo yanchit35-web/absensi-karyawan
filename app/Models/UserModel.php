@@ -25,9 +25,9 @@ class UserModel extends Model
     // Validation
     protected $validationRules = [
         'username' => 'required|min_length[3]|max_length[100]',
-        'password' => 'required|min_length[6]',
+        'password' => 'permit_empty|min_length[6]',
         'nama'     => 'required|max_length[150]',
-        'role'     => 'required|in_list[admin,karyawan]',
+        'role'     => 'permit_empty|in_list[admin,karyawan]',
     ];
 
     protected $validationMessages = [];
@@ -42,7 +42,28 @@ class UserModel extends Model
     {
         if (isset($data['data']['password']) && $data['data']['password'] !== '') {
             $data['data']['password'] = password_hash($data['data']['password'], PASSWORD_DEFAULT);
+        } else {
+            unset($data['data']['password']);
         }
         return $data;
+    }
+
+    /**
+     * Cari nomor urut username 'empXXX' berikutnya secara otomatis
+     */
+    public function getNextEmpUsername(): string
+    {
+        $users = $this->select('username')->like('username', 'emp', 'after')->findAll();
+        $maxNum = 0;
+        foreach ($users as $u) {
+            if (preg_match('/^emp(\d+)$/i', $u['username'], $matches)) {
+                $num = (int)$matches[1];
+                if ($num > $maxNum) {
+                    $maxNum = $num;
+                }
+            }
+        }
+        $nextNum = $maxNum + 1;
+        return 'emp' . str_pad((string)$nextNum, 3, '0', STR_PAD_LEFT);
     }
 }

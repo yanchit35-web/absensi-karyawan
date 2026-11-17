@@ -23,21 +23,25 @@ class KaryawanController extends BaseController
         $search     = $this->request->getGet('search');
         $departemen = $this->request->getGet('departemen');
 
-        $builder = $this->karyawanModel;
+        $db = \Config\Database::connect();
+        $builder = $db->table('karyawan')
+            ->select('karyawan.*, users.username, users.id as user_id')
+            ->join('users', 'users.karyawan_id = karyawan.id', 'left');
 
         if ($search) {
             $builder = $builder->groupStart()
-                ->like('nama', $search)
-                ->orLike('nik', $search)
-                ->orLike('jabatan', $search)
+                ->like('karyawan.nama', $search)
+                ->orLike('karyawan.nik', $search)
+                ->orLike('karyawan.jabatan', $search)
+                ->orLike('users.username', $search)
                 ->groupEnd();
         }
 
         if ($departemen) {
-            $builder = $builder->where('departemen', $departemen);
+            $builder = $builder->where('karyawan.departemen', $departemen);
         }
 
-        $karyawan   = $builder->orderBy('nama', 'ASC')->findAll();
+        $karyawan    = $builder->orderBy('karyawan.nama', 'ASC')->get()->getResultArray();
         $departemens = $this->karyawanModel->getDepartemen();
 
         $data = [
@@ -56,9 +60,16 @@ class KaryawanController extends BaseController
         if (session()->get('role') !== 'admin') {
             return redirect()->to('/dashboard')->with('error', 'Akses ditolak!');
         }
+
+        $userModel = new UserModel();
+        $nextUsername = $userModel->getNextEmpUsername();
+        $nextNik      = $this->karyawanModel->getNextNik();
+
         $data = [
-            'title'      => 'Tambah Karyawan',
-            'validation' => null,
+            'title'        => 'Tambah Karyawan',
+            'nextUsername' => $nextUsername,
+            'nextNik'      => $nextNik,
+            'validation'   => null,
         ];
         return view('karyawan/create', $data);
     }
@@ -68,6 +79,7 @@ class KaryawanController extends BaseController
         if (session()->get('role') !== 'admin') {
             return redirect()->to('/dashboard')->with('error', 'Akses ditolak!');
         }
+
         $rules = [
             'nik'        => 'required|max_length[20]|is_unique[karyawan.nik]',
             'nama'       => 'required|max_length[150]',
@@ -76,18 +88,37 @@ class KaryawanController extends BaseController
             'email'      => 'permit_empty|valid_email|max_length[150]',
             'telepon'    => 'permit_empty|max_length[20]',
             'tgl_masuk'  => 'permit_empty|valid_date[Y-m-d]',
+            'username'   => 'required|min_length[3]|max_length[100]|is_unique[users.username]',
+            'password'   => 'required|min_length[6]',
         ];
 
-        if (!$this->validate($rules)) {
+        $messages = [
+            'username' => [
+                'required'  => 'Username akun login wajib diisi.',
+                'is_unique' => 'Username ini sudah digunakan oleh akun lain. Silakan pilih username lain.',
+            ],
+            'password' => [
+                'required'   => 'Password akun login wajib diisi.',
+                'min_length' => 'Password minimal harus 6 karakter.',
+            ],
+        ];
+
+        if (!$this->validate($rules, $messages)) {
+            $userModel = new UserModel();
             return view('karyawan/create', [
-                'title'      => 'Tambah Karyawan',
-                'validation' => $this->validator,
+                'title'        => 'Tambah Karyawan',
+                'nextUsername' => $userModel->getNextEmpUsername(),
+                'nextNik'      => $this->karyawanModel->getNextNik(),
+                'validation'   => $this->validator,
             ]);
         }
 
-        $this->karyawanModel->insert([
+        $nama = $this->request->getPost('nama');
+
+        // 1. Simpan data karyawan
+        $karyawanId = $this->karyawanModel->insert([
             'nik'        => $this->request->getPost('nik'),
-            'nama'       => $this->request->getPost('nama'),
+            'nama'       => $nama,
             'jabatan'    => $this->request->getPost('jabatan'),
             'departemen' => $this->request->getPost('departemen'),
             'email'      => $this->request->getPost('email'),
@@ -96,7 +127,20 @@ class KaryawanController extends BaseController
             'status'     => $this->request->getPost('status') ?? 'aktif',
         ]);
 
-        return redirect()->to('/karyawan')->with('success', 'Karyawan berhasil ditambahkan!');
+        // 2. Otomatis buatkan akun user untuk karyawan baru
+        $userModel = new UserModel();
+        $username = trim($this->request->getPost('username'));
+        $password = $this->request->getPost('password') ?: 'password123';
+
+        $userModel->insert([
+            'username'    => $username,
+            'password'    => $password,
+            'nama'        => $nama,
+            'role'        => 'karyawan',
+            'karyawan_id' => $karyawanId,
+        ]);
+
+        return redirect()->to('/karyawan')->with('success', "Karyawan '{$nama}' berhasil ditambahkan! Akun login otomatis dibuat dengan username '{$username}'.");
     }
 
     public function edit($id)
@@ -111,10 +155,16 @@ class KaryawanController extends BaseController
             return redirect()->to('/karyawan')->with('error', 'Karyawan tidak ditemukan!');
         }
 
+        $userModel = new UserModel();
+        $user = $userModel->where('karyawan_id', $id)->first();
+        $suggestedUsername = $user ? $user['username'] : $userModel->getNextEmpUsername();
+
         $data = [
-            'title'      => 'Edit Karyawan',
-            'karyawan'   => $karyawan,
-            'validation' => null,
+            'title'             => 'Edit Karyawan',
+            'karyawan'          => $karyawan,
+            'user'              => $user,
+            'suggestedUsername' => $suggestedUsername,
+            'validation'        => null,
         ];
 
         return view('karyawan/edit', $data);
@@ -132,6 +182,14 @@ class KaryawanController extends BaseController
             return redirect()->to('/karyawan')->with('error', 'Karyawan tidak ditemukan!');
         }
 
+        $userModel = new UserModel();
+        $user = $userModel->where('karyawan_id', $id)->first();
+
+        // Validasi keunikan username (kecuali milik user ini sendiri)
+        $usernameRule = $user
+            ? "required|min_length[3]|max_length[100]|is_unique[users.username,id,{$user['id']}]"
+            : "required|min_length[3]|max_length[100]|is_unique[users.username]";
+
         $rules = [
             'nik'        => "required|max_length[20]|is_unique[karyawan.nik,id,{$id}]",
             'nama'       => 'required|max_length[150]',
@@ -140,19 +198,36 @@ class KaryawanController extends BaseController
             'email'      => 'permit_empty|valid_email|max_length[150]',
             'telepon'    => 'permit_empty|max_length[20]',
             'tgl_masuk'  => 'permit_empty|valid_date[Y-m-d]',
+            'username'   => $usernameRule,
+            'password'   => 'permit_empty|min_length[6]',
         ];
 
-        if (!$this->validate($rules)) {
+        $messages = [
+            'username' => [
+                'required'  => 'Username akun login wajib diisi.',
+                'is_unique' => 'Username ini sudah digunakan oleh akun lain. Silakan pilih username lain.',
+            ],
+            'password' => [
+                'min_length' => 'Password minimal harus 6 karakter jika ingin diubah.',
+            ],
+        ];
+
+        if (!$this->validate($rules, $messages)) {
             return view('karyawan/edit', [
-                'title'      => 'Edit Karyawan',
-                'karyawan'   => $karyawan,
-                'validation' => $this->validator,
+                'title'             => 'Edit Karyawan',
+                'karyawan'          => $karyawan,
+                'user'              => $user,
+                'suggestedUsername' => $user ? $user['username'] : $userModel->getNextEmpUsername(),
+                'validation'        => $this->validator,
             ]);
         }
 
+        $namaKaryawan = $this->request->getPost('nama');
+
+        // 1. Update data karyawan
         $this->karyawanModel->update($id, [
             'nik'        => $this->request->getPost('nik'),
-            'nama'       => $this->request->getPost('nama'),
+            'nama'       => $namaKaryawan,
             'jabatan'    => $this->request->getPost('jabatan'),
             'departemen' => $this->request->getPost('departemen'),
             'email'      => $this->request->getPost('email'),
@@ -161,7 +236,36 @@ class KaryawanController extends BaseController
             'status'     => $this->request->getPost('status') ?? 'aktif',
         ]);
 
-        return redirect()->to('/karyawan')->with('success', 'Karyawan berhasil diupdate!');
+        // 2. Update atau Buat akun login di tabel users (untuk karyawan lama maupun baru)
+        $newUsername = trim($this->request->getPost('username'));
+        $newPassword = $this->request->getPost('password');
+
+        if ($user) {
+            $userData = [
+                'username' => $newUsername,
+                'nama'     => $namaKaryawan,
+            ];
+            if (!empty($newPassword)) {
+                $userData['password'] = $newPassword; // Otomatis di-hash oleh UserModel
+            }
+            $userModel->update($user['id'], $userData);
+        } else {
+            // Jika karyawan lama belum memiliki akun di tabel users
+            $userModel->insert([
+                'username'    => $newUsername,
+                'password'    => !empty($newPassword) ? $newPassword : 'password123',
+                'nama'        => $namaKaryawan,
+                'role'        => 'karyawan',
+                'karyawan_id' => $id,
+            ]);
+        }
+
+        $msg = "Data karyawan '{$namaKaryawan}' berhasil diperbarui! Username login: '{$newUsername}'.";
+        if (!empty($newPassword)) {
+            $msg .= " Password login berhasil diubah.";
+        }
+
+        return redirect()->to('/karyawan')->with('success', $msg);
     }
 
     public function delete($id)
@@ -176,12 +280,12 @@ class KaryawanController extends BaseController
             return redirect()->to('/karyawan')->with('error', 'Karyawan tidak ditemukan!');
         }
 
-        // Also delete the associated user account if any
+        // Hapus akun user terkait jika ada
         $userModel = new UserModel();
         $userModel->where('karyawan_id', $id)->delete();
 
         $this->karyawanModel->delete($id);
 
-        return redirect()->to('/karyawan')->with('success', 'Karyawan berhasil dihapus!');
+        return redirect()->to('/karyawan')->with('success', 'Karyawan dan akun login terkait berhasil dihapus!');
     }
 }

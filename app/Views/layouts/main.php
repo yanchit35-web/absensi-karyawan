@@ -204,6 +204,12 @@
     <a href="/laporan" class="nav-link <?= str_starts_with(uri_string(), 'laporan') ? 'active' : '' ?>">
         <i class="bi bi-file-earmark-pdf-fill"></i> Unduh Rekap Saya
     </a>
+
+    <div class="nav-section">Pengaturan Akun</div>
+
+    <a href="/profil" class="nav-link <?= uri_string() === 'profil' ? 'active' : '' ?>">
+        <i class="bi bi-shield-lock-fill"></i> Ganti Password
+    </a>
     <?php endif; ?>
 
     <!-- Sidebar user info -->
@@ -244,6 +250,10 @@
                 </div>
                 <ul class="dropdown-menu dropdown-menu-end shadow">
                     <li><h6 class="dropdown-header">Akun Saya</h6></li>
+                    <li><a class="dropdown-item" href="/profil">
+                        <i class="bi bi-shield-lock me-2 text-primary"></i>Ganti Password
+                    </a></li>
+                    <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item text-danger" href="/logout">
                         <i class="bi bi-box-arrow-right me-2"></i>Logout
                     </a></li>

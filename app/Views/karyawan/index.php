@@ -47,6 +47,7 @@
                         <th width="40">#</th>
                         <th>NIK</th>
                         <th>Nama Karyawan</th>
+                        <th>Username Login</th>
                         <th>Jabatan</th>
                         <th>Departemen</th>
                         <th>Telepon</th>
@@ -58,7 +59,7 @@
                 <tbody>
                     <?php if (empty($karyawan)): ?>
                     <tr>
-                        <td colspan="9" class="text-center py-5 text-muted">
+                        <td colspan="10" class="text-center py-5 text-muted">
                             <i class="bi bi-inbox fs-1 d-block mb-2 opacity-25"></i>
                             Tidak ada data karyawan
                         </td>
@@ -78,6 +79,15 @@
                                     <div class="text-muted small"><?= esc($k['email'] ?? '-') ?></div>
                                 </div>
                             </div>
+                        </td>
+                        <td>
+                            <?php if (!empty($k['username'])): ?>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 font-monospace">
+                                    <i class="bi bi-person-fill me-1"></i><?= esc($k['username']) ?>
+                                </span>
+                            <?php else: ?>
+                                <span class="badge bg-secondary-subtle text-secondary border">Belum ada akun</span>
+                            <?php endif; ?>
                         </td>
                         <td><?= esc($k['jabatan']) ?></td>
                         <td><span class="badge bg-light text-dark border"><?= esc($k['departemen']) ?></span></td>

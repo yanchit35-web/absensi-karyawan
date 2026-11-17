@@ -85,6 +85,15 @@
                                     <span style="color: rgba(255, 255, 255, 0.65); font-size: 0.8rem; font-weight: 500;">Departemen:</span>
                                     <span class="text-white fw-bold" style="font-size: 0.92rem;"><?= esc($profile['departemen'] ?? '-') ?></span>
                                 </div>
+
+                                <!-- Ganti Password / Profil Akun -->
+                                <a href="/profil" class="employee-meta-pill text-decoration-none" title="Kelola Akun & Ganti Password">
+                                    <div class="icon-bubble" style="background: rgba(130, 80, 223, 0.3); border: 1px solid rgba(175, 128, 255, 0.6); color: #d2a8ff;">
+                                        <i class="bi bi-shield-lock-fill"></i>
+                                    </div>
+                                    <span style="color: rgba(255, 255, 255, 0.75); font-size: 0.8rem; font-weight: 500;">Akun:</span>
+                                    <span class="text-white fw-bold" style="font-size: 0.88rem;">Ganti Password <i class="bi bi-arrow-right-short"></i></span>
+                                </a>
                             </div>
                         </div>
                     </div>

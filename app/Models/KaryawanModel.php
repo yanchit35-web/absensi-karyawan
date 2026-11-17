@@ -48,4 +48,23 @@ class KaryawanModel extends Model
     {
         return $this->where('status', 'aktif')->findAll();
     }
+
+    /**
+     * Cari NIK 'EMPXXX' berikutnya secara otomatis
+     */
+    public function getNextNik(): string
+    {
+        $rows = $this->select('nik')->like('nik', 'EMP', 'after')->findAll();
+        $maxNum = 0;
+        foreach ($rows as $r) {
+            if (preg_match('/^emp(\d+)$/i', $r['nik'], $matches)) {
+                $num = (int)$matches[1];
+                if ($num > $maxNum) {
+                    $maxNum = $num;
+                }
+            }
+        }
+        $nextNum = $maxNum + 1;
+        return 'EMP' . str_pad((string)$nextNum, 3, '0', STR_PAD_LEFT);
+    }
 }
