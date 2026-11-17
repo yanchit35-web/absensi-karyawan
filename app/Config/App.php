@@ -199,4 +199,17 @@ class App extends BaseConfig
      * @see http://www.w3.org/TR/CSP/
      */
     public bool $CSPEnabled = false;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        // Otomatis sesuaikan baseURL dengan host pengakses (mendukung tunneling & domain publik)
+        if (isset($_SERVER['HTTP_HOST'])) {
+            $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ||
+                      (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+                      ? 'https' : 'http';
+            $this->baseURL = $scheme . '://' . $_SERVER['HTTP_HOST'] . '/';
+        }
+    }
 }
