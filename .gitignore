@@ -28,6 +28,10 @@ $RECYCLE.BIN/
 *.lnk
 ~$*
 
+# Local Academic Reports
+*.docx
+*.doc
+
 # Linux
 *~
 
