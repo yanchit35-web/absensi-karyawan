@@ -97,6 +97,63 @@ class AbsensiModel extends Model
     }
 
     /**
+     * Mengambil rekapitulasi absensi harian dari SQL View vw_rekap_absensi_harian
+     */
+    public function getRekapView($tanggal = null, $karyawan_id = null, $status = null)
+    {
+        $db = \Config\Database::connect();
+        try {
+            $builder = $db->table('vw_rekap_absensi_harian');
+            if ($tanggal) {
+                $builder->where('tanggal', $tanggal);
+            }
+            if ($karyawan_id) {
+                $builder->where('karyawan_id', $karyawan_id);
+            }
+            if ($status) {
+                $builder->where('status', $status);
+            }
+            return $builder->orderBy('tanggal', 'DESC')->orderBy('created_at', 'DESC')->get()->getResultArray();
+        } catch (\Throwable $e) {
+            // Fallback ke tabel dasar jika View belum tersedia
+            return $this->getWithKaryawan();
+        }
+    }
+
+    /**
+     * Hitung jarak geospasial menggunakan Stored Function SQL fn_hitung_jarak_haversine
+     */
+    public function getHaversineDistanceSQL($lat1, $lon1, $lat2, $lon2)
+    {
+        $db = \Config\Database::connect();
+        try {
+            $query = $db->query("SELECT fn_hitung_jarak_haversine(?, ?, ?, ?) AS distance", [
+                (float)$lat1, (float)$lon1, (float)$lat2, (float)$lon2
+            ]);
+            $row = $query->getRow();
+            if ($row && $row->distance !== null) {
+                return (int)$row->distance;
+            }
+        } catch (\Throwable $e) {
+            log_message('notice', 'fn_hitung_jarak_haversine exception: ' . $e->getMessage());
+        }
+
+        // Fallback formula matematis
+        $earthRadius = 6371000;
+        $lat1Rad = deg2rad((float)$lat1);
+        $lat2Rad = deg2rad((float)$lat2);
+        $deltaLat = deg2rad((float)$lat2 - (float)$lat1);
+        $deltaLon = deg2rad((float)$lon2 - (float)$lon1);
+
+        $a = sin($deltaLat / 2) * sin($deltaLat / 2) +
+             cos($lat1Rad) * cos($lat2Rad) *
+             sin($deltaLon / 2) * sin($deltaLon / 2);
+        $c = 2 * atan2(sqrt(min(1.0, max(0.0, $a))), sqrt(max(0.0, 1 - $a)));
+
+        return (int)round($earthRadius * $c);
+    }
+
+    /**
      * Check if karyawan already absen today
      */
     public function cekAbsenHariIni($karyawan_id)

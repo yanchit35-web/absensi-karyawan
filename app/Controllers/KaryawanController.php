@@ -121,7 +121,7 @@ class KaryawanController extends BaseController
 
         $nama = $this->request->getPost('nama');
 
-        // 1. Simpan data karyawan
+        // 1. Simpan data karyawan (memicu Database Trigger: trg_auto_create_user_karyawan)
         $karyawanId = $this->karyawanModel->insert([
             'nik'        => $this->request->getPost('nik'),
             'nama'       => $nama,
@@ -134,18 +134,34 @@ class KaryawanController extends BaseController
             'status'     => $this->request->getPost('status') ?? 'aktif',
         ]);
 
-        // 2. Otomatis buatkan akun user untuk karyawan baru
+        // 2. Integrasi Database Trigger: trg_auto_create_user_karyawan
+        // Trigger AFTER INSERT secara otomatis membuat akun login default di tabel users.
+        // Controller mengecek dan memperbarui jika admin menginput kredensial kustom, atau membuat fallback jika trigger non-aktif.
         $userModel = new UserModel();
         $username = trim($this->request->getPost('username'));
         $password = $this->request->getPost('password') ?: 'password123';
 
-        $userModel->insert([
-            'username'    => $username,
-            'password'    => $password,
-            'nama'        => $nama,
-            'role'        => 'karyawan',
-            'karyawan_id' => $karyawanId,
-        ]);
+        $existingUser = $userModel->where('karyawan_id', $karyawanId)->first();
+        if ($existingUser) {
+            // Akun telah otomatis dibuat oleh trigger; perbarui username & password jika admin menentukan kustom
+            $updateData = [
+                'username' => $username,
+                'nama'     => $nama,
+            ];
+            if (!empty($password)) {
+                $updateData['password'] = $password;
+            }
+            $userModel->update($existingUser['id'], $updateData);
+        } else {
+            // Fallback jika database environment tidak mengeksekusi trigger
+            $userModel->insert([
+                'username'    => $username,
+                'password'    => $password,
+                'nama'        => $nama,
+                'role'        => 'karyawan',
+                'karyawan_id' => $karyawanId,
+            ]);
+        }
 
         return redirect()->to('/karyawan')->with('success', "Karyawan '{$nama}' berhasil ditambahkan! Akun login otomatis dibuat dengan username '{$username}'.");
     }

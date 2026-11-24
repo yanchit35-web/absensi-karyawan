@@ -27,30 +27,58 @@ class AbsensiController extends BaseController
         $tanggal    = $this->request->getGet('tanggal');
         $status     = $this->request->getGet('status');
 
-        $builder = $this->absensiModel
-            ->select('absensi.*, karyawan.nama, karyawan.nik, karyawan.jabatan, karyawan.departemen')
-            ->join('karyawan', 'karyawan.id = absensi.karyawan_id');
+        // Integrasi SQL View: vw_rekap_absensi_harian
+        // Menampilkan rekap harian, kalkulasi menit keterlambatan, dan status shift
+        try {
+            $db = \Config\Database::connect();
+            $viewBuilder = $db->table('vw_rekap_absensi_harian');
 
-        // PENTING: Karyawan HANYA bisa melihat riwayat absennya sendiri!
-        if ($role === 'karyawan') {
-            $karyawan_id = $userKaryawanId;
-            $builder->where('absensi.karyawan_id', $userKaryawanId);
-        } else {
-            $karyawan_id = $this->request->getGet('karyawan_id');
-            if ($karyawan_id) {
-                $builder->where('absensi.karyawan_id', $karyawan_id);
+            if ($role === 'karyawan') {
+                $karyawan_id = $userKaryawanId;
+                $viewBuilder->where('karyawan_id', $userKaryawanId);
+            } else {
+                $karyawan_id = $this->request->getGet('karyawan_id');
+                if ($karyawan_id) {
+                    $viewBuilder->where('karyawan_id', $karyawan_id);
+                }
             }
+
+            if ($tanggal) {
+                $viewBuilder->where('tanggal', $tanggal);
+            }
+
+            if ($status) {
+                $viewBuilder->where('status', $status);
+            }
+
+            $absensi = $viewBuilder->orderBy('tanggal', 'DESC')->orderBy('created_at', 'DESC')->get()->getResultArray();
+        } catch (\Throwable $e) {
+            // Fallback graceful ke query builder bawaan jika view belum tersedia
+            $builder = $this->absensiModel
+                ->select('absensi.*, karyawan.nama, karyawan.nik, karyawan.jabatan, karyawan.departemen')
+                ->join('karyawan', 'karyawan.id = absensi.karyawan_id');
+
+            if ($role === 'karyawan') {
+                $karyawan_id = $userKaryawanId;
+                $builder->where('absensi.karyawan_id', $userKaryawanId);
+            } else {
+                $karyawan_id = $this->request->getGet('karyawan_id');
+                if ($karyawan_id) {
+                    $builder->where('absensi.karyawan_id', $karyawan_id);
+                }
+            }
+
+            if ($tanggal) {
+                $builder->where('absensi.tanggal', $tanggal);
+            }
+
+            if ($status) {
+                $builder->where('absensi.status', $status);
+            }
+
+            $absensi = $builder->orderBy('absensi.tanggal', 'DESC')->orderBy('absensi.created_at', 'DESC')->findAll();
         }
 
-        if ($tanggal) {
-            $builder->where('absensi.tanggal', $tanggal);
-        }
-
-        if ($status) {
-            $builder->where('absensi.status', $status);
-        }
-
-        $absensi  = $builder->orderBy('absensi.tanggal', 'DESC')->orderBy('absensi.created_at', 'DESC')->findAll();
         $karyawan = ($role === 'admin') ? $this->karyawanModel->getAktif() : [];
 
         $data = [
@@ -345,20 +373,36 @@ class AbsensiController extends BaseController
     }
 
     /**
-     * Hitung Jarak 2 Titik Koordinat (Haversine Formula) dalam Satuan Meter
+     * Hitung Jarak 2 Titik Koordinat Menggunakan Stored Function SQL: fn_hitung_jarak_haversine
+     * Dilengkapi fallback rumus trigonometri bola bumi Haversine di PHP untuk keandalan maksimal tanpa mengganggu Geofencing GPS.
      */
     private function calculateDistance($lat1, $lon1, $lat2, $lon2)
     {
+        // 1. Eksekusi Stored Function SQL: fn_hitung_jarak_haversine
+        try {
+            $db = \Config\Database::connect();
+            $query = $db->query("SELECT fn_hitung_jarak_haversine(?, ?, ?, ?) AS distance", [
+                (float)$lat1, (float)$lon1, (float)$lat2, (float)$lon2
+            ]);
+            $row = $query->getRow();
+            if ($row && $row->distance !== null) {
+                return (int)$row->distance;
+            }
+        } catch (\Throwable $e) {
+            log_message('notice', 'fn_hitung_jarak_haversine fallback: ' . $e->getMessage());
+        }
+
+        // 2. Fallback Rumus Haversine Matematis di PHP
         $earthRadius = 6371000; // Radius bumi dalam meter
-        $lat1Rad = deg2rad($lat1);
-        $lat2Rad = deg2rad($lat2);
-        $deltaLat = deg2rad($lat2 - $lat1);
-        $deltaLon = deg2rad($lon2 - $lon1);
+        $lat1Rad = deg2rad((float)$lat1);
+        $lat2Rad = deg2rad((float)$lat2);
+        $deltaLat = deg2rad((float)$lat2 - (float)$lat1);
+        $deltaLon = deg2rad((float)$lon2 - (float)$lon1);
 
         $a = sin($deltaLat / 2) * sin($deltaLat / 2) +
              cos($lat1Rad) * cos($lat2Rad) *
              sin($deltaLon / 2) * sin($deltaLon / 2);
-        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+        $c = 2 * atan2(sqrt(min(1.0, max(0.0, $a))), sqrt(max(0.0, 1 - $a)));
 
         return (int)round($earthRadius * $c);
     }

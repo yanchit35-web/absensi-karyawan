@@ -108,9 +108,34 @@ class PengajuanController extends BaseController
             return redirect()->to('/pengajuan')->with('error', 'Pengajuan tidak ditemukan!');
         }
 
+        $catatanAdmin = $this->request->getPost('catatan_admin') ?? 'Disetujui oleh admin';
+        $db = \Config\Database::connect();
+
+        // 1. Eksekusi Stored Procedure Atomik: sp_proses_approval_pengajuan
+        try {
+            $db->query("CALL sp_proses_approval_pengajuan(?, ?, @status, @message)", [
+                (int)$id, 
+                $catatanAdmin
+            ]);
+            $res = $db->query("SELECT @status AS status, @message AS message")->getRow();
+
+            if ($res && !empty($res->status)) {
+                if ($res->status === 'success') {
+                    return redirect()->to('/pengajuan')->with('success', $res->message);
+                } elseif ($res->status === 'warning') {
+                    return redirect()->to('/pengajuan')->with('warning', $res->message);
+                } elseif ($res->status === 'error') {
+                    return redirect()->to('/pengajuan')->with('error', $res->message);
+                }
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'sp_proses_approval_pengajuan fallback: ' . $e->getMessage());
+        }
+
+        // 2. Fallback PHP jika database environment tidak mendukung Stored Procedure
         $this->pengajuanModel->update($id, [
             'status'        => 'approved',
-            'catatan_admin' => $this->request->getPost('catatan_admin') ?? 'Disetujui oleh admin',
+            'catatan_admin' => $catatanAdmin,
         ]);
 
         // Otomatis masukkan record ke absensi untuk rentang tanggal pengajuan
