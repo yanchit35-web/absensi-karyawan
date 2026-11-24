@@ -125,12 +125,13 @@
                         </td>
                         <td class="text-muted small"><?= esc($row['keterangan'] ?? '-') ?></td>
                         <?php if (!$isKaryawan): ?>
+                        <?php $rowId = $row['id'] ?? $row['absensi_id'] ?? ''; ?>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <a href="/absensi/edit/<?= $row['id'] ?>" class="btn btn-outline-warning" title="Edit">
+                                <a href="/absensi/edit/<?= $rowId ?>" class="btn btn-outline-warning" title="Edit">
                                     <i class="bi bi-pencil-fill"></i>
                                 </a>
-                                <a href="/absensi/delete/<?= $row['id'] ?>" class="btn btn-outline-danger" title="Hapus"
+                                <a href="/absensi/delete/<?= $rowId ?>" class="btn btn-outline-danger" title="Hapus"
                                    onclick="return confirm('Hapus data absensi ini?')">
                                     <i class="bi bi-trash-fill"></i>
                                 </a>
