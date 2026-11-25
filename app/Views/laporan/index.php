@@ -19,8 +19,9 @@
                     $bulanNames = ['01'=>'Januari','02'=>'Februari','03'=>'Maret','04'=>'April','05'=>'Mei','06'=>'Juni',
                                    '07'=>'Juli','08'=>'Agustus','09'=>'September','10'=>'Oktober','11'=>'November','12'=>'Desember'];
                     foreach ($bulanNames as $num => $name):
+                        $numStr = str_pad((string)$num, 2, '0', STR_PAD_LEFT);
                     ?>
-                    <option value="<?= $num ?>" <?= str_pad($bulan ?? date('m'), 2, '0', STR_PAD_LEFT) === $num ? 'selected' : '' ?>>
+                    <option value="<?= $numStr ?>" <?= str_pad((string)($bulan ?? date('m')), 2, '0', STR_PAD_LEFT) === $numStr ? 'selected' : '' ?>>
                         <?= $name ?>
                     </option>
                     <?php endforeach; ?>
